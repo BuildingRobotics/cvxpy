@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Taken from
-# http://stackoverflow.com/questions/3012421/python-lazy-property-decorator
-
 
 def lazyprop(func):
     """Wraps a property so it is lazily evaluated.
@@ -27,13 +24,13 @@ def lazyprop(func):
     Returns:
         A property that only does computation the first time it is called.
     """
-    attr_name = '_lazy_' + func.__name__
+    attribute = '_comfy_{}'.format(func.__name__)
 
     @property
-    def _lazyprop(self):
+    def _comfyattr(self):
         """A lazily evaluated propery.
         """
-        if not hasattr(self, attr_name):
-            setattr(self, attr_name, func(self))
-        return getattr(self, attr_name)
-    return _lazyprop
+        if not hasattr(self, attribute):
+            setattr(self, attribute, func(self))
+        return getattr(self, attribute)
+    return _comfyattr

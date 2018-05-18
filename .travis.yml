@@ -7,26 +7,36 @@ env:
   matrix:
     - DISTRIB="conda" PYTHON_VERSION="2.7" INSTALL_ATLAS="true"
       NUMPY_VERSION="1.10.4" SCIPY_VERSION="0.17.0"
-      COVERAGE="true" INSTALL_GLPK="true"
-    - DISTRIB="conda" PYTHON_VERSION="2.7" INSTALL_ATLAS="true"
-      NUMPY_VERSION="1.10.4" SCIPY_VERSION="0.17.0"
-      COVERAGE="true" INSTALL_GLPK="false"
-    - DISTRIB="conda" PYTHON_VERSION="3.5" INSTALL_ATLAS="true"
-      NUMPY_VERSION="1.10.4" SCIPY_VERSION="0.17.0"
-      COVERAGE="true" INSTALL_GLPK="true"
-    - DISTRIB="conda" PYTHON_VERSION="3.5" INSTALL_ATLAS="true"
-      NUMPY_VERSION="1.10.4" SCIPY_VERSION="0.17.0"
       COVERAGE="true" INSTALL_GLPK="false"
 sudo: required
 install: source continuous_integration/install.sh
 script:
   - bash continuous_integration/test_script.sh
-  - flake8 .
 after_success:
     - if [[ "$COVERAGE" == "true" ]]; then coveralls; fi
-cache: apt
 addons:
   apt:
     packages:
     - gfortran
     - libgfortran3
+
+before_deploy:
+  # Create wheel
+  - pip wheel -w wheel .
+  - mkdir wheel/dist/ && mv wheel/cvxpy* wheel/dist/
+
+# Upload master wheels to S3 for pypicloud
+deploy:
+  provider: s3
+  access_key_id:
+    secure: ""
+  secret_access_key:
+    secure: ""
+  bucket: software-buildingrobotics
+  local-dir: wheel/dist
+  upload-dir: cvxpy
+  region: us-west-1
+  skip_cleanup: true
+  on:
+    repo: BuildingRobotics/cvxpy
+    branch: Comfy/master
